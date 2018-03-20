@@ -23,8 +23,11 @@ mime = "^ 0.2.0"
 serde = "^ 1.0"
 serde_json = "^ 1.0"
 serde_derive = "^ 1.0"
-yup-oauth2 = "^ 1.0"
 url = "= 0.5"
+
+[dependencies.yup-oauth2]
+git="https://github.com/edelangh/yup-oauth2"
+branch="update_rustls"
 
 [features]
 
