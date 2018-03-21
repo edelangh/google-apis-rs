@@ -237,6 +237,7 @@
 #[macro_use]
 extern crate serde_derive;
 
+#[macro_use]
 extern crate hyper;
 extern crate serde;
 extern crate serde_json;
@@ -2848,6 +2849,7 @@ pub struct FileWatchCall<'a, C, A>
     _additional_params: HashMap<String, String>,
     _scopes: BTreeMap<String, ()>
 }
+
 
 impl<'a, C, A> CallBuilder for FileWatchCall<'a, C, A> {}
 
@@ -5611,6 +5613,8 @@ pub struct FileGetCall<'a, C, A>
     _additional_params: HashMap<String, String>,
     _scopes: BTreeMap<String, ()>
 }
+header! {(GDRange, "Range"
+    ) => [String]}
 
 impl<'a, C, A> CallBuilder for FileGetCall<'a, C, A> {}
 
@@ -5714,9 +5718,17 @@ impl<'a, C, A> FileGetCall<'a, C, A> where C: BorrowMut<hyper::Client>, A: oauth
             let auth_header = Authorization(Bearer { token: token.access_token });
             let mut req_result = {
                 let mut client = &mut *self.hub.client.borrow_mut();
-                let mut req = client.borrow_mut().request(hyper::method::Method::Get, &url)
+                let mut req = 
+                if let Some(range) = range {
+                    client.borrow_mut().request(hyper::method::Method::Get, &url)
                     .header(UserAgent(self.hub._user_agent.clone()))
-                    .header(auth_header.clone());
+                    .header(auth_header.clone())
+                    .header(GDRange(format!("bytes={}-{}", range[0], range[1])))
+                } else {
+                    client.borrow_mut().request(hyper::method::Method::Get, &url)
+                    .header(UserAgent(self.hub._user_agent.clone()))
+                    .header(auth_header.clone())
+                };
 
                 dlg.pre_request();
                 req.send()
